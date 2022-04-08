@@ -57,6 +57,24 @@ func Parse(raw tfconfig.ModuleCall) (*Parsed, error) {
 		}
 		out.Constraints = constraints
 		out.ConstraintsString = raw.Version
+	case src.Nexus != nil:
+		if src.Nexus.ModuleVersion != "" {
+			version, err := semver.NewVersion(src.Nexus.ModuleVersion)
+			if err == nil {
+				out.Version = version
+			}
+			out.VersionString = src.Nexus.ModuleVersion
+		}
+		if raw.Version == "" {
+			return &out, nil
+		}
+		// this adds (non-terraform-standard..) support for version constraints to Git sources
+		constraints, err := semver.NewConstraint(raw.Version)
+		if err != nil {
+			return nil, fmt.Errorf("parse constraint %q: %w", raw.Version, err)
+		}
+		out.Constraints = constraints
+		out.ConstraintsString = raw.Version
 	}
 	return &out, nil
 }

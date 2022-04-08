@@ -11,6 +11,7 @@ type Source struct {
 	Git      *Git
 	Registry *Registry
 	Local    *string
+	Nexus    *Nexus
 }
 
 func (s Source) Type() string {
@@ -21,6 +22,8 @@ func (s Source) Type() string {
 		return "registry"
 	case s.Local != nil:
 		return "local"
+	case s.Nexus != nil:
+		return "nexus"
 	}
 	return ""
 }
@@ -33,6 +36,8 @@ func (s Source) URI() string {
 		return s.Registry.Normalized
 	case s.Local != nil:
 		return *s.Local
+	case s.Nexus != nil:
+		return s.Nexus.ModulePath
 	}
 	return ""
 }
@@ -65,6 +70,12 @@ func Parse(raw string) (*Source, error) {
 		return &Source{Git: git}, nil
 	case "file":
 		return &Source{Local: &detected}, nil
+	case "nexus":
+		nexus, err := parseNexusURL(detected)
+		if err != nil {
+			return nil, err
+		}
+		return &Source{Nexus: nexus}, nil
 	default:
 		return nil, fmt.Errorf("%w: %v (%v)", ErrSourceNotSupported, proto, raw)
 	}

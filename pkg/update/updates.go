@@ -76,6 +76,14 @@ func (c *Client) Versions(s source.Source) ([]*semver.Version, error) {
 		return versions, nil
 	case s.Local != nil:
 		return nil, nil
+	case s.Nexus != nil:
+		nexus := s.Nexus
+		versions, err := versions.Nexus(nexus.ModulePath, nexus.ModuleName, nexus.ModuleVersion)
+		if err != nil {
+			return nil, fmt.Errorf("fetch versions from nexus: %w", err)
+		}
+		c.VersionsCache[s.URI()] = versions
+		return versions, nil
 	default:
 		return nil, source.ErrSourceNotSupported
 	}

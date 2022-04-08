@@ -32,7 +32,11 @@ func detect(raw string) (string, string, error) {
 		return forced, detected, nil
 	}
 	if u, _ := url.Parse(detected); u != nil {
-		forced = u.Scheme
+		if u.Host == "artifacts.dox.support" {
+			forced = "nexus"
+		} else {
+			forced = u.Scheme
+		}
 	}
 	return forced, detected, nil
 }
